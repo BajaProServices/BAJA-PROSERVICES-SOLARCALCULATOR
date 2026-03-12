@@ -1,0 +1,322 @@
+<index.html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baja ProServices - Solar Calculator</title>
+    <style>
+        :root {
+            --baja-blue: #0a4a95;
+            --baja-yellow: #ffb400;
+            --baja-dark: #1a1a1a;
+            --light-bg: #f8fafc;
+            --white: #ffffff;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            background-color: var(--light-bg); 
+            color: #334155; 
+            line-height: 1.6;
+        }
+
+        /* --- HERO SECTION --- */
+        .hero-container {
+            width: 100%;
+            height: 350px;
+            background: url('hero.png') no-repeat center center;
+            background-size: cover;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(transparent, rgba(0,0,0,0.4));
+        }
+
+        /* --- LANGUAGE BAR --- */
+        .lang-bar { 
+            background: var(--baja-dark); 
+            padding: 12px; 
+            text-align: center; 
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .lang-bar button { 
+            background: rgba(255,255,255,0.1); 
+            border: 1px solid #444; 
+            color: white; 
+            cursor: pointer; 
+            padding: 6px 15px; 
+            margin: 0 5px; 
+            border-radius: 20px; 
+            font-size: 0.85rem;
+            transition: 0.3s;
+        }
+        .lang-bar button.active { 
+            background: var(--baja-yellow); 
+            color: var(--baja-dark); 
+            border-color: var(--baja-yellow); 
+            font-weight: bold;
+        }
+
+        /* --- MAIN FORM --- */
+        .container { 
+            max-width: 850px; 
+            margin: -40px auto 60px; 
+            background: var(--white); 
+            padding: 40px; 
+            border-radius: 16px; 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); 
+            position: relative;
+            z-index: 10;
+        }
+
+        h3 { 
+            color: var(--baja-blue); 
+            border-bottom: 2px solid var(--baja-yellow); 
+            padding-bottom: 8px;
+            margin-top: 40px; 
+            text-transform: uppercase; 
+            font-size: 1rem; 
+            letter-spacing: 1px;
+        }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-inputs { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; margin-top: 15px; }
+        
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.85rem; color: #475569; }
+        select, input { 
+            width: 100%; padding: 12px; border: 1px solid #cbd5e1; 
+            border-radius: 8px; box-sizing: border-box; font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        select:focus, input:focus { outline: none; border-color: var(--baja-blue); border-width: 2px; }
+
+        /* --- RESULTS --- */
+        .results-card { 
+            background: var(--baja-blue); color: white; padding: 30px; border-radius: 12px; 
+            margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; text-align: center;
+        }
+        .res-val { display: block; font-size: 2rem; font-weight: 800; color: var(--baja-yellow); }
+        .res-label { opacity: 0.85; font-size: 0.75rem; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px; }
+        
+        .roi-box {
+            grid-column: 1 / -1; margin-top: 15px; padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem; font-style: italic;
+        }
+
+        .tag-dac { background: #ef4444; color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; margin-left: 10px; display: none; }
+
+        /* --- BUTTONS --- */
+        .action-buttons { display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin-top: 30px; }
+        .btn-send { background-color: #25d366; color: white; border: none; padding: 18px; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 1rem; transition: 0.3s; }
+        .btn-send:hover { background-color: #128c7e; transform: translateY(-2px); }
+        .btn-clear { background-color: #e2e8f0; color: #475569; border: none; padding: 18px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+        @media (max-width: 768px) { 
+            .results-card { grid-template-columns: 1fr; } 
+            .form-grid, .action-buttons { grid-template-columns: 1fr; } 
+            .container { padding: 20px; width: 90%; }
+            .hero-container { height: 200px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="lang-bar">
+    <button onclick="setLang('es')" id="btn-es" class="active">🇲🇽 ES</button>
+    <button onclick="setLang('en')" id="btn-en">🇺🇸 EN</button>
+    <button onclick="setLang('fr')" id="btn-fr">🇫🇷 FR</button>
+</div>
+
+<div class="hero-container">
+    <div class="hero-overlay"></div>
+</div>
+
+<div class="container">
+    <h3 id="txt-client-title">Información del Cliente</h3>
+    <div class="form-grid">
+        <div><label id="lbl-name">Nombre:</label><input type="text" id="nombre" placeholder="..."></div>
+        <div><label id="lbl-service">N. Servicio:</label><input type="text" id="servicio" placeholder="CFE ID"></div>
+    </div>
+
+    <h3 id="txt-history-title">Consumo Reciente (kWh) <span id="tagDAC" class="tag-dac">TARIFA DAC</span></h3>
+    <div style="margin-bottom: 20px; max-width: 400px;">
+        <label id="lbl-tariff">Tarifa Aplicable:</label>
+        <select id="tipoCliente" onchange="generarCampos()">
+            <option value="60">Doméstica (Bimestral)</option>
+            <option value="30">Comercial PDBT (Mensual)</option>
+        </select>
+    </div>
+    <div id="inputsConsumo" class="grid-inputs"></div>
+
+    <h3 id="txt-gear-title">Sistema Fotovoltaico</h3>
+    <div style="max-width: 400px;">
+        <label id="lbl-panel">Potencia del Panel:</label>
+        <select id="potenciaPanel" onchange="calcular()">
+            <option value="550">550W Standard Efficiency</option>
+            <option value="650">650W High Performance</option>
+            <option value="720">720W Ultra Industrial</option>
+        </select>
+    </div>
+
+    <div class="results-card">
+        <div>
+            <span class="res-label" id="lbl-res-panels">Paneles</span>
+            <span class="res-val" id="resPaneles">0</span>
+        </div>
+        <div>
+            <span class="res-label" id="lbl-res-cost">Inversión</span>
+            <span class="res-val" id="resPrecio">$0.00</span>
+        </div>
+        <div>
+            <span class="res-label" id="lbl-res-roi">Retorno (ROI)</span>
+            <span class="res-val" id="resROI">0 Años</span>
+        </div>
+        <div class="roi-box" id="roi-msg">---</div>
+    </div>
+
+    <div class="action-buttons">
+        <button class="btn-clear" onclick="limpiarDatos()" id="btn-reset">LIMPIAR</button>
+        <button class="btn-send" onclick="enviarInformacion()" id="btn-quote">WHATSAPP QUOTE</button>
+    </div>
+</div>
+
+<script>
+    const translations = {
+        es: { 
+            clientTitle: "Información del Cliente", name: "Nombre:", service: "N. Servicio:", 
+            historyTitle: "Consumo Reciente (kWh)", tariff: "Tarifa Aplicable:", 
+            gearTitle: "Sistema Fotovoltaico", panel: "Potencia del Panel:", 
+            resPanels: "Paneles", resCost: "Inversión", resROI: "Retorno ROI", 
+            unit: "Periodo", roiYears: "Años", btnClear: "LIMPIAR", btnQuote: "COTIZAR WHATSAPP",
+            dacTag: "TARIFA DAC DETECTADA", domestica: "Doméstica (Bimestral)", comercial: "Comercial (Mensual)"
+        },
+        en: { 
+            clientTitle: "Client Information", name: "Name:", service: "Service No:", 
+            historyTitle: "Recent Consumption (kWh)", tariff: "Rate Type:", 
+            gearTitle: "Solar PV System", panel: "Panel Wattage:", 
+            resPanels: "Panels", resCost: "Total Investment", resROI: "ROI Return", 
+            unit: "Period", roiYears: "Years", btnClear: "CLEAR", btnQuote: "GET WHATSAPP QUOTE",
+            dacTag: "HIGH CONSUMPTION (DAC)", domestica: "Residential (Bi-monthly)", comercial: "Commercial (Monthly)"
+        },
+        fr: { 
+            clientTitle: "Informations Client", name: "Nom:", service: "N° de Service:", 
+            historyTitle: "Consommation (kWh)", tariff: "Type de Tarif:", 
+            gearTitle: "Système Photovoltaïque", panel: "Puissance du Panneau:", 
+            resPanels: "Panneaux", resCost: "Investissement", resROI: "Retour (ROI)", 
+            unit: "Période", roiYears: "Ans", btnClear: "EFFACER", btnQuote: "DEVIS WHATSAPP",
+            dacTag: "TARIF DAC DÉTECTÉ", domestica: "Résidentiel (Bimestriel)", comercial: "Commercial (Mensuel)"
+        }
+    };
+
+    let currentLang = 'es';
+
+    function setLang(lang) {
+        currentLang = lang;
+        document.querySelectorAll('.lang-bar button').forEach(b => b.classList.remove('active'));
+        document.getElementById(`btn-${lang}`).classList.add('active');
+        
+        const t = translations[lang];
+        document.getElementById('txt-client-title').innerText = t.clientTitle;
+        document.getElementById('lbl-name').innerText = t.name;
+        document.getElementById('lbl-service').innerText = t.service;
+        document.getElementById('txt-history-title').firstChild.textContent = t.historyTitle;
+        document.getElementById('lbl-tariff').innerText = t.tariff;
+        document.getElementById('txt-gear-title').innerText = t.gearTitle;
+        document.getElementById('lbl-panel').innerText = t.panel;
+        document.getElementById('lbl-res-panels').innerText = t.resPanels;
+        document.getElementById('lbl-res-cost').innerText = t.resCost;
+        document.getElementById('lbl-res-roi').innerText = t.resROI;
+        document.getElementById('btn-reset').innerText = t.btnClear;
+        document.getElementById('btn-quote').innerText = t.btnQuote;
+        document.getElementById('tagDAC').innerText = t.dacTag;
+        
+        // Update Select Options
+        const sel = document.getElementById('tipoCliente');
+        sel.options[0].text = t.domestica;
+        sel.options[1].text = t.comercial;
+
+        generarCampos();
+    }
+
+    function generarCampos() {
+        const container = document.getElementById('inputsConsumo');
+        const typeValue = document.getElementById('tipoCliente').value;
+        const total = typeValue === "60" ? 6 : 12;
+        container.innerHTML = '';
+        for (let i = 1; i <= total; i++) {
+            container.innerHTML += `<div><label>${translations[currentLang].unit} ${i}</label><input type="number" class="consumo-val" oninput="calcular()" placeholder="0"></div>`;
+        }
+    }
+
+    function calcular() {
+        const basePricePerWatt = 15.15;
+        const tax = 1.16;
+        const watts = parseFloat(document.getElementById('potenciaPanel').value);
+        const type = document.getElementById('tipoCliente').value;
+        
+        let totalConsumption = 0;
+        let count = 0;
+        document.querySelectorAll('.consumo-val').forEach(i => {
+            if(i.value > 0) { totalConsumption += parseFloat(i.value); count++; }
+        });
+
+        if (totalConsumption > 0) {
+            const avgBiMonthly = (type === "60") ? (totalConsumption / (count || 1)) : (totalConsumption / (count || 1) * 2);
+            
+            let kwhPrice = 0;
+            let isDAC = false;
+
+            if (type === "60") {
+                if (avgBiMonthly > 500) { kwhPrice = 6.50; isDAC = true; } 
+                else if (avgBiMonthly > 280) { kwhPrice = 3.51; }
+                else { kwhPrice = 1.10; }
+            } else {
+                kwhPrice = 6.20; 
+            }
+
+            document.getElementById('tagDAC').style.display = isDAC ? "inline" : "none";
+
+            const panelsNeeded = Math.ceil(((totalConsumption / 365) / 5.9 / 0.8) * 1000 / watts);
+            const totalInvestment = (panelsNeeded * watts * basePricePerWatt) * tax;
+            
+            const annualKwh = (type === "60") ? (totalConsumption * (6/(count||1))) : (totalConsumption * (12/(count||1)));
+            const annualSavings = (annualKwh * kwhPrice) * tax;
+            const roi = (totalInvestment / annualSavings).toFixed(1);
+
+            document.getElementById('resPaneles').innerText = panelsNeeded;
+            document.getElementById('resPrecio').innerText = '$' + totalInvestment.toLocaleString('es-MX', {maximumFractionDigits: 0});
+            document.getElementById('resROI').innerText = `${roi} ${translations[currentLang].roiYears}`;
+            
+            const infoMsg = currentLang === 'es' ? `Ahorro anual est.: $${annualSavings.toLocaleString()} MXN` : 
+                           currentLang === 'en' ? `Est. Annual Savings: $${annualSavings.toLocaleString()} MXN` :
+                           `Économies annuelles est.: $${annualSavings.toLocaleString()} MXN`;
+            document.getElementById('roi-msg').innerText = infoMsg;
+        }
+    }
+
+    function limpiarDatos() {
+        if(confirm("¿Limpiar datos? / Clear data?")) location.reload();
+    }
+
+    function enviarInformacion() {
+        const name = document.getElementById('nombre').value || "Client";
+        const panels = document.getElementById('resPaneles').innerText;
+        const cost = document.getElementById('resPrecio').innerText;
+        const roi = document.getElementById('resROI').innerText;
+        const msg = `*SOLAR QUOTE - BAJA PRO*%0A👤 Name: ${name}%0A☀️ Panels: ${panels}%0A💰 Investment: ${cost}%0A⏳ ROI: ${roi}`;
+        window.open(`https://wa.me/526122198325?text=${msg}`, '_blank');
+    }
+
+    setLang('es');
+</script>
+</body>
+</html>
